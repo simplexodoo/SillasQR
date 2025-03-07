@@ -19,6 +19,29 @@
       margin: 40px auto;
     }
 
+    input[type="password"], button {
+      display: block;
+      width: 90vw;
+      max-width: 600px;
+      height: 60px;
+      font-size: 20px;
+      padding: 15px;
+      border: 2px solid black;
+      border-radius: 8px;
+      margin: 20px auto;
+      background-color: white;
+      color: black;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: black;
+      color: white;
+    }
+    
     .lds-ring {
       display: none;
       margin: 40px auto;
@@ -61,6 +84,9 @@
 
 <img id="logo" src="https://i.postimg.cc/FFkMzyCn/Simplex.png" alt="Logo">
 
+<input type="password" id="password" placeholder="Contraseña">
+<button onclick="authenticate()">Ingresar</button>
+
 <div class="lds-ring" id="loading">
   <div></div>
 </div>
@@ -69,33 +95,44 @@
 
 <script>
   const AS_URL_BASE = "https://script.google.com/macros/s/AKfycbzOuqT-DSQDS5-5tyjyYpwyshDarTGyfinhzN7ez9aTFVRk1jLykLYPSbCTaM6zGD3ZAg/exec";
-  const url = new URL(window.location.href);
-  const k = url.searchParams.get("k");
-  const usernameElement = document.getElementById("username");
 
-  if (k) {
+  function authenticate() {
+    const password = document.getElementById('password').value;
+    if (password.length < 1 || password.length > 20) {
+      alert("Ingrese una contraseña válida");
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const k = url.searchParams.get("k");
+    if (!k) {
+      alert("Falta ID de la silla");
+      return;
+    }
+
     document.getElementById("loading").style.display = "inline-block";
-    
-    fetch(`${AS_URL_BASE}?k=${k}`)
+    fetch(`${AS_URL_BASE}?k=${k}&q=${password}`)
       .then(response => response.text())
       .then(result => {
         document.getElementById("loading").style.display = "none";
-        
         if (result.trim()) {
-          const nameParts = result.split(" ");
-          usernameElement.innerText = nameParts.join("\n");
+          document.getElementById("username").innerText = result;
         } else {
-          usernameElement.innerText = "No se encontró el usuario.";
+          alert("Acceso denegado.");
         }
       })
       .catch(err => {
         document.getElementById("loading").style.display = "none";
         console.error("Error de conexión:", err);
-        usernameElement.innerText = "Error al procesar la solicitud.";
+        alert("Hubo un error al procesar la solicitud.");
       });
-  } else {
-    usernameElement.innerText = "No se especificó una clave.";
   }
+
+  document.getElementById('password').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      authenticate();
+    }
+  });
 </script>
 
 </body>
